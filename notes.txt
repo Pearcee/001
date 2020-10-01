@@ -1,0 +1,49 @@
+https://mikesmithers.wordpress.com/2017/02/21/configuring-django-with-apache-on-a-raspberry-pi/
+sudo apt-get update ; sudo apt-get upgrade -y ; sudo apt-get autoremove
+git clone https://github.com/Pearcee/001.git
+
+python3 -m venv env
+source env/bin/activate
+
+pip install django
+
+django-admin.py startproject ssite .
+
+import os
+./manage.py makemigrations
+./manage.py migrate
+./manage.py createsuperuser
+./manage.py collectstatic
+ python manage.py runserver 0.0.0.0:8000
+
+
+# apache
+sudo apt-get install apache2 -y
+sudo apt-get install apache2-dev -y
+sudo apt-get install apache2-mpm-worker -y
+sudo apt-get install libapache2-mod-wsgi-py3 -y
+
+sudo nano /etc/apache2/sites-available/000-default.conf
+
+Alias /static /www/dvds/static
+    <Directory /www/dvds/static> 
+        Require all granted
+    </Directory>
+  
+    <Directory /www/dvds/dvds>
+        <Files wsgi.py>
+            Require all granted
+        </Files>
+    </Directory>
+  
+    WSGIDaemonProcess dvds python-path=/www/dvds python-home=/www/dvds/env
+    WSGIProcessGroup dvds
+    WSGIScriptAlias / /www/dvds/dvds/wsgi.py
+</VirtualHost>
+
+chmod g+w /www/001/db.sqlite3
+chmod g+w /www/001
+sudo chown :www-data /www/001/db.sqlite3
+sudo chown :www-data /www/001
+
+sudo service apache2 restart
